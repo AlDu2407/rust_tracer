@@ -7,14 +7,11 @@ pub struct Vec3 {
     e2: f64,
 }
 
-pub fn dot(u: Vec3, v: Vec3) -> f64 {
+pub fn dot_product(u: &Vec3, v: &Vec3) -> f64 {
     u.e0 * v.e0 + u.e1 * v.e1 + u.e2 * v.e2
 }
 
-pub fn dot_ref(u: &Vec3, v: &Vec3) -> f64 {
-    u.e0 * v.e0 + u.e1 * v.e1 + u.e2 * v.e2
-}
-
+#[allow(dead_code)]
 pub fn cross(u: Vec3, v: Vec3) -> Vec3 {
     Vec3::from(
         u.e1 * v.e2 - u.e2 * v.e1,
@@ -150,7 +147,7 @@ impl<'a> ops::Sub<&'a Vec3> for &Vec3 {
     type Output = Vec3;
 
     fn sub(self, rhs: &'a Vec3) -> Self::Output {
-        *self + *rhs
+        *self - *rhs
     }
 }
 
@@ -158,7 +155,7 @@ impl<'a> ops::Sub<Vec3> for &Vec3 {
     type Output = Vec3;
 
     fn sub(self, rhs: Vec3) -> Self::Output {
-        *self + &rhs
+        *self - &rhs
     }
 }
 
@@ -166,7 +163,7 @@ impl<'a> ops::Sub<&'a Vec3> for Vec3 {
     type Output = Vec3;
 
     fn sub(self, rhs: &'a Vec3) -> Self::Output {
-        self + *rhs
+        self - *rhs
     }
 }
 

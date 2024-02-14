@@ -5,8 +5,16 @@ pub struct Ray {
     direction: Vec3,
 }
 
+#[allow(dead_code)]
 impl Ray {
-    pub fn new(origin: Point, direction: Vec3) -> Self {
+    pub fn new() -> Self {
+        Self {
+            origin: Point::new(),
+            direction: Vec3::new(),
+        }
+    }
+
+    pub fn from(origin: Point, direction: Vec3) -> Self {
         Self { origin, direction }
     }
 
