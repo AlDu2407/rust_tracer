@@ -1,5 +1,7 @@
 use super::{
     hittable::{HitRecord, Hittable},
+    interval::Interval,
+    ray::Ray,
     utility::Point,
     vec3::dot_product,
 };
@@ -17,13 +19,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(
-        &self,
-        ray: &super::ray::Ray,
-        ray_tmin: f64,
-        ray_tmax: f64,
-        record: &mut HitRecord,
-    ) -> bool {
+    fn hit(&self, ray: &Ray, ray_t: &Interval, record: &mut HitRecord) -> bool {
         let oc = ray.origin() - self.center;
         let a = ray.direction().length_squared();
         let half_b = dot_product(&oc, ray.direction());
@@ -37,9 +33,9 @@ impl Hittable for Sphere {
         let sqrt_disc = f64::sqrt(discriminant);
         // Find the nearest root that lies in the acceptable range.
         let mut root = (-half_b - sqrt_disc) / a;
-        if root <= ray_tmin || ray_tmax <= root {
+        if !ray_t.surrounds(root) {
             root = (-half_b + sqrt_disc) / a;
-            if root <= ray_tmin || ray_tmax <= root {
+            if !ray_t.surrounds(root) {
                 return false;
             }
         }

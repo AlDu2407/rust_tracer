@@ -1,3 +1,4 @@
+use crate::adrt::interval::Interval;
 use crate::adrt::utility::Point;
 
 use super::{
@@ -37,5 +38,5 @@ impl HitRecord {
 }
 
 pub trait Hittable {
-    fn hit(&self, ray: &Ray, ray_tmin: f64, ray_tmax: f64, record: &mut HitRecord) -> bool;
+    fn hit(&self, ray: &Ray, ray_t: &Interval, record: &mut HitRecord) -> bool;
 }
