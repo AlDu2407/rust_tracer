@@ -22,34 +22,6 @@ fn ray_color(ray: &Ray, world: &HittableList) -> Color {
     (1.0 - a) * Color::from(1.0, 1.0, 1.0) + a * Color::from(0.5, 0.7, 1.0)
 }
 
-#[allow(dead_code)]
-fn hit_sphere(center: &Point, radius: f64, r: &Ray) -> f64 {
-    let oc = r.origin() - center;
-    let a = dot_product(r.direction(), r.direction());
-    let b = 2.0 * dot_product(&oc, r.direction());
-    let c = dot_product(&oc, &oc) - radius * radius;
-    let disc = b * b - 4.0 * a * c;
-
-    if disc < 0.0 {
-        -1.0
-    } else {
-        (-b - f64::sqrt(disc)) / (2.0 * a)
-    }
-}
-
-#[allow(dead_code)]
-fn prev_ray_color(ray: &Ray) -> Color {
-    let t = hit_sphere(&Point::from(0.0, 0.0, -1.0), 0.5, ray);
-    if t > 0.0 {
-        let n = unit_vector(ray.at(t) - Vec3::from(0.0, 0.0, -1.0));
-        return 0.5 * Color::from(n.x() + 1.0, n.y() + 1.0, n.z() + 1.0);
-    }
-
-    let unit_direction = unit_vector(*ray.direction());
-    let a = 0.5 * (unit_direction.y() + 1.0);
-    (1.0 - a) * Color::from(1.0, 1.0, 1.0) + a * Color::from(0.5, 0.7, 1.0)
-}
-
 fn main() -> std::io::Result<()> {
     // Open file or creat new image file
     let file_path = "image.ppm";
@@ -113,7 +85,6 @@ fn main() -> std::io::Result<()> {
             let ray_direction = pixel_center - camera_center;
             let r = Ray::from(camera_center, ray_direction);
 
-            // let pixel_color = prev_ray_color(&r);
             let pixel_color = ray_color(&r, &world);
             write_color(&mut file, pixel_color)?;
         }
