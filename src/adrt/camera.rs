@@ -1,6 +1,6 @@
-use std::{fs::File, io::Write};
+use std::{fs::File, io::Write, time::Duration};
 
-use indicatif::ProgressBar;
+use indicatif::{ProgressBar, ProgressStyle};
 
 use crate::adrt::{
     camera, hittable::HitRecord, interval::Interval, utility::write_color, vec3::unit_vector,
@@ -49,10 +49,15 @@ impl Camera {
         if duration == 0 {
             panic!("Duration cannot be null, check the image size!");
         }
+        let sty = ProgressStyle::default_bar()
+            .template(
+                "[{elapsed_precise} | {percent}%] {bar:40.cyan/blue} {pos:>7}/{len:7} \n{msg}",
+            )
+            .expect("Could not create style for progress bar.");
 
         let bar = ProgressBar::new(duration);
+        bar.set_style(sty);
 
-        println!("\n\nStarting render for rust tracer...");
         file.write(
             format!(
                 "P3\n{} {}\n255\n",
@@ -65,7 +70,6 @@ impl Camera {
         for j in 0..self.camera_config.image_height {
             for i in 0..self.image_width {
                 bar.inc(1);
-
                 let pixel_center = self.camera_config.pixel00_loc
                     + (i as f64 * self.camera_config.pixel_delta_u)
                     + (j as f64 * self.camera_config.pixel_delta_v);
@@ -80,7 +84,8 @@ impl Camera {
         }
         file.flush()
             .expect(format!("Could not flush data to '{}'", file_path).as_str());
-        bar.finish_with_message("Rendering finished successfully!");
+        bar.finish_and_clear();
+        println!("Rendering finished successfully!");
     }
 
     fn initialize(&self) -> CameraConfig {
