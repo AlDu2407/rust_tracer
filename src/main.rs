@@ -18,7 +18,8 @@ fn main() -> std::io::Result<()> {
 
     camera.aspect_ratio = 16.0 / 9.0;
     camera.image_width = 1200;
-    camera.samples_per_pixel = 100;
+    camera.samples_per_pixel = 50;
+    camera.max_depth = 10;
 
     camera.render(&file_path.to_string(), &world);
 

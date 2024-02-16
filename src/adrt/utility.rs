@@ -1,6 +1,6 @@
 use crate::adrt::vec3::Vec3;
-use rand::rngs::ThreadRng;
-use rand::{Rng, SeedableRng};
+
+use rand::Rng;
 use std::fs::File;
 use std::io::Write;
 

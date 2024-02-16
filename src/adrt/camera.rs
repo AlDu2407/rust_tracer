@@ -10,7 +10,7 @@ use super::{
     hittable::Hittable,
     ray::Ray,
     utility::{random, Color, Point},
-    vec3::Vec3,
+    vec3::{random_on_hemisphere, Vec3},
 };
 
 #[derive(Debug, Copy, Clone)]
@@ -18,6 +18,7 @@ pub struct Camera {
     pub aspect_ratio: f64,
     pub image_width: i32,
     pub samples_per_pixel: i32,
+    pub max_depth: i32,
     camera_config: CameraConfig,
 }
 
@@ -36,6 +37,7 @@ impl Camera {
             aspect_ratio: 0.0,
             image_width: 0,
             samples_per_pixel: 0,
+            max_depth: 0,
             camera_config: CameraConfig::new(),
         }
     }
@@ -75,7 +77,7 @@ impl Camera {
                 let mut pixel_color = Color::from(0.0, 0.0, 0.0);
                 for _ in 0..self.samples_per_pixel {
                     let ray = self.get_ray(i, j);
-                    pixel_color = pixel_color + self.ray_color(&ray, world);
+                    pixel_color = pixel_color + self.ray_color(&ray, self.max_depth, world);
                 }
 
                 write_color(&mut file, pixel_color, self.samples_per_pixel).expect(
@@ -85,8 +87,7 @@ impl Camera {
         }
         file.flush()
             .expect(format!("Could not flush data to '{}'", file_path).as_str());
-        bar.finish_and_clear();
-        println!("Rendering finished successfully!");
+        bar.finish_with_message("Rendering finished successfully!");
     }
 
     fn initialize(&self) -> CameraConfig {
@@ -125,11 +126,16 @@ impl Camera {
         )
     }
 
-    fn ray_color(&self, ray: &Ray, world: &impl Hittable) -> Color {
+    fn ray_color(&self, ray: &Ray, max_depth: i32, world: &impl Hittable) -> Color {
         let mut record = HitRecord::new();
 
-        if world.hit(ray, &Interval::from(0.0, f64::INFINITY), &mut record) {
-            return 0.5 * (record.normal + Color::from(1.0, 1.0, 1.0));
+        if max_depth == 0 {
+            return Color::from(0.0, 0.0, 0.0);
+        }
+
+        if world.hit(ray, &Interval::from(0.001, f64::INFINITY), &mut record) {
+            let direction = random_on_hemisphere(&record.normal);
+            return 0.5 * self.ray_color(&Ray::from(record.pt, direction), max_depth - 1, world);
         }
 
         let unit_direction = unit_vector(*ray.direction());

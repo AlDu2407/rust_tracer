@@ -1,5 +1,7 @@
 use std::ops;
 
+use super::utility::{random, random_range};
+
 #[derive(Debug, Clone, Copy)]
 pub struct Vec3 {
     e0: f64,
@@ -25,6 +27,31 @@ pub fn unit_vector(v: Vec3) -> Vec3 {
     v / length
 }
 
+#[allow(dead_code)]
+pub fn random_in_unit_sphere() -> Vec3 {
+    loop {
+        let vec = Vec3::from_random_range(-1.0, 1.0);
+        if vec.length_squared() < 1.0 {
+            return vec;
+        }
+    }
+}
+
+#[allow(dead_code)]
+pub fn random_unit_vector() -> Vec3 {
+    unit_vector(random_in_unit_sphere())
+}
+
+#[allow(dead_code)]
+pub fn random_on_hemisphere(normal: &Vec3) -> Vec3 {
+    let on_unit_sphere = random_unit_vector();
+    if dot_product(normal, &on_unit_sphere) > 0.0 {
+        on_unit_sphere
+    } else {
+        -on_unit_sphere
+    }
+}
+
 impl Vec3 {
     pub fn new() -> Vec3 {
         Self {
@@ -36,6 +63,18 @@ impl Vec3 {
 
     pub fn from(e0: f64, e1: f64, e2: f64) -> Vec3 {
         Self { e0, e1, e2 }
+    }
+
+    pub fn from_random() -> Vec3 {
+        Vec3::from(random(), random(), random())
+    }
+
+    pub fn from_random_range(min: f64, max: f64) -> Vec3 {
+        Vec3::from(
+            random_range(min, max),
+            random_range(min, max),
+            random_range(min, max),
+        )
     }
 
     pub fn from_i32(e0: i32, e1: i32, e2: i32) -> Vec3 {
