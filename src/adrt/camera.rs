@@ -1,15 +1,15 @@
-use std::{fs::File, io::Write, time::Duration};
+use std::{fs::File, io::Write};
 
 use indicatif::{ProgressBar, ProgressStyle};
 
 use crate::adrt::{
-    camera, hittable::HitRecord, interval::Interval, utility::write_color, vec3::unit_vector,
+    hittable::HitRecord, interval::Interval, utility::write_color, vec3::unit_vector,
 };
 
 use super::{
     hittable::Hittable,
     ray::Ray,
-    utility::{Color, Point},
+    utility::{random, Color, Point},
     vec3::Vec3,
 };
 
@@ -17,6 +17,7 @@ use super::{
 pub struct Camera {
     pub aspect_ratio: f64,
     pub image_width: i32,
+    pub samples_per_pixel: i32,
     camera_config: CameraConfig,
 }
 
@@ -34,6 +35,7 @@ impl Camera {
         Self {
             aspect_ratio: 0.0,
             image_width: 0,
+            samples_per_pixel: 0,
             camera_config: CameraConfig::new(),
         }
     }
@@ -70,14 +72,13 @@ impl Camera {
         for j in 0..self.camera_config.image_height {
             for i in 0..self.image_width {
                 bar.inc(1);
-                let pixel_center = self.camera_config.pixel00_loc
-                    + (i as f64 * self.camera_config.pixel_delta_u)
-                    + (j as f64 * self.camera_config.pixel_delta_v);
-                let ray_direction = pixel_center - self.camera_config.center;
-                let r = Ray::from(self.camera_config.center, ray_direction);
+                let mut pixel_color = Color::from(0.0, 0.0, 0.0);
+                for _ in 0..self.samples_per_pixel {
+                    let ray = self.get_ray(i, j);
+                    pixel_color = pixel_color + self.ray_color(&ray, world);
+                }
 
-                let pixel_color = self.ray_color(&r, world);
-                write_color(&mut file, pixel_color).expect(
+                write_color(&mut file, pixel_color, self.samples_per_pixel).expect(
                     format!("Cannot write {:?} to file '{}'", pixel_color, file_path).as_str(),
                 );
             }
@@ -134,6 +135,25 @@ impl Camera {
         let unit_direction = unit_vector(*ray.direction());
         let a = 0.5 * (unit_direction.y() + 1.0);
         (1.0 - a) * Color::from(1.0, 1.0, 1.0) + a * Color::from(0.5, 0.7, 1.0)
+    }
+
+    fn get_ray(&self, i: i32, j: i32) -> Ray {
+        let pixel_center = self.camera_config.pixel00_loc
+            + (i as f64 * self.camera_config.pixel_delta_u)
+            + (j as f64 * self.camera_config.pixel_delta_v);
+        let pixel_sample = pixel_center + self.pixel_sample_square();
+
+        let ray_origin = self.camera_config.center;
+        let ray_direction = pixel_sample - ray_origin;
+
+        Ray::from(ray_origin, ray_direction)
+    }
+
+    fn pixel_sample_square(&self) -> Vec3 {
+        let px = -0.5 + random();
+        let py = -0.5 + random();
+
+        (px * self.camera_config.pixel_delta_u) + (py * self.camera_config.pixel_delta_v)
     }
 }
 
