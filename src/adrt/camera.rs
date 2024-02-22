@@ -10,7 +10,7 @@ use super::{
     hittable::Hittable,
     ray::Ray,
     utility::{random, Color, Point},
-    vec3::{random_on_hemisphere, random_unit_vector, Vec3},
+    vec3::Vec3,
 };
 
 #[derive(Debug, Copy, Clone)]
@@ -134,8 +134,19 @@ impl Camera {
         }
 
         if world.hit(ray, &Interval::from(0.001, f64::INFINITY), &mut record) {
-            let direction = record.normal + random_unit_vector();
-            return 0.5 * self.ray_color(&Ray::from(record.pt, direction), max_depth - 1, world);
+            let mut attenuation = Color::new();
+            let mut scattered = Ray::new();
+            if record
+                .material
+                .scatter(ray, &record, &mut attenuation, &mut scattered)
+            {
+                return attenuation * self.ray_color(&scattered, max_depth - 1, world);
+            }
+
+            return Color::new();
+
+            // let direction = record.normal + random_unit_vector();
+            // return 0.5 * self.ray_color(&Ray::from(record.pt, direction), max_depth - 1, world);
         }
 
         let unit_direction = unit_vector(*ray.direction());

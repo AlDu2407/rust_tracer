@@ -52,6 +52,11 @@ pub fn random_on_hemisphere(normal: &Vec3) -> Vec3 {
     }
 }
 
+#[allow(dead_code)]
+pub fn reflect(v: &Vec3, normal: &Vec3) -> Vec3 {
+    v - 2.0 * dot_product(v, normal) * normal
+}
+
 impl Vec3 {
     pub fn new() -> Vec3 {
         Self {
@@ -111,6 +116,12 @@ impl Vec3 {
 
     pub fn length_squared(&self) -> f64 {
         self.e0 * self.e0 + self.e1 * self.e1 + self.e2 * self.e2
+    }
+
+    pub fn near_zero(&self) -> bool {
+        let s = 1e-8;
+
+        (self.e0.abs() < s) && (self.e1.abs() < s) && (self.e2.abs() < s)
     }
 }
 

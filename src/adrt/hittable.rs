@@ -2,6 +2,7 @@ use crate::adrt::interval::Interval;
 use crate::adrt::utility::Point;
 
 use super::{
+    material::MaterialType,
     ray::Ray,
     vec3::{dot_product, Vec3},
 };
@@ -10,6 +11,7 @@ use super::{
 pub struct HitRecord {
     pub pt: Point,
     pub normal: Vec3,
+    pub material: MaterialType,
     pub t: f64,
     pub front_face: bool,
 }
@@ -19,6 +21,7 @@ impl HitRecord {
         HitRecord {
             pt: Point::new(),
             normal: Vec3::new(),
+            material: MaterialType::NONE,
             t: 0.0,
             front_face: false,
         }

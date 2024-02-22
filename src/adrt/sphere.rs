@@ -1,6 +1,7 @@
 use super::{
     hittable::{HitRecord, Hittable},
     interval::Interval,
+    material::MaterialType,
     ray::Ray,
     utility::Point,
     vec3::dot_product,
@@ -9,12 +10,17 @@ use super::{
 pub struct Sphere {
     center: Point,
     radius: f64,
+    material: MaterialType,
 }
 
 impl Sphere {
     #[allow(dead_code)]
-    pub fn from(center: Point, radius: f64) -> Sphere {
-        Sphere { center, radius }
+    pub fn from(center: Point, radius: f64, material: MaterialType) -> Sphere {
+        Sphere {
+            center,
+            radius,
+            material,
+        }
     }
 }
 
@@ -44,6 +50,7 @@ impl Hittable for Sphere {
         record.pt = ray.at(record.t);
         let outward_normal = (record.pt - self.center) / self.radius;
         record.set_face_normal(ray, &outward_normal);
+        record.material = self.material;
 
         true
     }
