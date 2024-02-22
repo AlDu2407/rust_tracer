@@ -9,6 +9,10 @@ use super::interval::Interval;
 pub type Color = Vec3;
 pub type Point = Vec3;
 
+pub fn linear_to_gamma(linear_component: f64) -> f64 {
+    f64::sqrt(linear_component)
+}
+
 pub fn write_color(
     file: &mut File,
     pixel_color: Color,
@@ -16,9 +20,9 @@ pub fn write_color(
 ) -> std::io::Result<()> {
     let scale = 1.0 / samples_per_pixel as f64;
     let intensity = Interval::from(0.000, 0.999);
-    let r = pixel_color.x() * scale;
-    let g = pixel_color.y() * scale;
-    let b = pixel_color.z() * scale;
+    let r = linear_to_gamma(pixel_color.x() * scale);
+    let g = linear_to_gamma(pixel_color.y() * scale);
+    let b = linear_to_gamma(pixel_color.z() * scale);
 
     file.write(
         format!(
