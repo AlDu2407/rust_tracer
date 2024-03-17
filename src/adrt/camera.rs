@@ -1,4 +1,7 @@
-use std::{fs::File, io::Write};
+use std::{
+    fs::File,
+    io::{BufWriter, Result, Write},
+};
 
 use indicatif::{ProgressBar, ProgressStyle};
 
@@ -41,11 +44,8 @@ impl Camera {
             camera_config: CameraConfig::new(),
         }
     }
-    pub fn render(&mut self, file_path: &String, world: &impl Hittable) {
-        let mut file = match File::create(file_path) {
-            Ok(f) => f,
-            Err(_) => panic!("ERROR: could not open ${file_path}"),
-        };
+    pub fn render(&mut self, file_path: &String, world: &impl Hittable) -> Result<()> {
+        let mut file = BufWriter::new(File::create(file_path)?);
         let camera_config = self.initialize();
         self.camera_config = camera_config;
 
@@ -64,7 +64,7 @@ impl Camera {
 
         file.write(
             format!(
-                "P3\n{} {}\n255\n",
+                "P6\n{} {} 255\n",
                 self.image_width, self.camera_config.image_height
             )
             .as_bytes(),
@@ -88,6 +88,8 @@ impl Camera {
         file.flush()
             .expect(format!("Could not flush data to '{}'", file_path).as_str());
         bar.finish_with_message("Rendering finished successfully!");
+
+        Ok(())
     }
 
     fn initialize(&self) -> CameraConfig {

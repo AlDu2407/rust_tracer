@@ -2,7 +2,7 @@ use crate::adrt::vec3::Vec3;
 
 use rand::Rng;
 use std::fs::File;
-use std::io::Write;
+use std::io::{BufWriter, Write};
 
 use super::interval::Interval;
 
@@ -14,25 +14,18 @@ pub fn linear_to_gamma(linear_component: f64) -> f64 {
 }
 
 pub fn write_color(
-    file: &mut File,
+    file: &mut BufWriter<File>,
     pixel_color: Color,
     samples_per_pixel: i32,
 ) -> std::io::Result<()> {
     let scale = 1.0 / samples_per_pixel as f64;
     let intensity = Interval::from(0.000, 0.999);
-    let r = linear_to_gamma(pixel_color.x() * scale);
-    let g = linear_to_gamma(pixel_color.y() * scale);
-    let b = linear_to_gamma(pixel_color.z() * scale);
+    let mut pixels = Vec::<u8>::with_capacity(3);
+    pixels.push((intensity.clamp(linear_to_gamma(pixel_color.x() * scale)) * 255.0) as u8);
+    pixels.push((intensity.clamp(linear_to_gamma(pixel_color.y() * scale)) * 255.0) as u8);
+    pixels.push((intensity.clamp(linear_to_gamma(pixel_color.z() * scale)) * 255.0) as u8);
 
-    file.write(
-        format!(
-            "{} {} {}\n",
-            (256.0 * intensity.clamp(r)) as u64,
-            (256.0 * intensity.clamp(g)) as u64,
-            (256.0 * intensity.clamp(b)) as u64
-        )
-        .as_bytes(),
-    )?;
+    file.write(&pixels)?;
     Ok(())
 }
 
